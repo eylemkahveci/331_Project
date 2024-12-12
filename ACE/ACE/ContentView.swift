@@ -7,14 +7,15 @@
 
 import SwiftUI
 
+
 struct ContentView: View {
-    
     var body: some View {
-        TabView{
-            mainView()
-                .tabItem { Image(systemName: "house") }
-            
-        }
+            TabView{
+                mainView()
+                    .tabItem { Image(systemName: "house") }
+                CategoryListView(categories: sampleCategories)
+                    .tabItem { Image(systemName: "list.bullet") }
+            }
     }
 }
 #Preview {

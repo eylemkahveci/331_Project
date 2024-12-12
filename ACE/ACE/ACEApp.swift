@@ -8,10 +8,11 @@
 import SwiftUI
 
 @main
+
 struct ACEApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SplashScreenView()
         }
     }
 }
