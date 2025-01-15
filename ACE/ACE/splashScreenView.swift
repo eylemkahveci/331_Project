@@ -54,4 +54,6 @@ struct SplashScreenView: View {
 }
 #Preview {
     SplashScreenView()
+        .environmentObject(ProfileData())
+        
 }
