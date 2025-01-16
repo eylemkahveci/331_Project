@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyClsHB9AFf-qRvQf4eSAn0Z-oFbmWw4tU4</string>
+	<key>GCM_SENDER_ID</key>
+	<string>568531418124</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>Group.ACE</string>
+	<key>PROJECT_ID</key>
+	<string>ace-shopping-app</string>
+	<key>STORAGE_BUCKET</key>
+	<string>ace-shopping-app.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:568531418124:ios:4c2617e45f1f52436dc229</string>
+</dict>
+</plist>
