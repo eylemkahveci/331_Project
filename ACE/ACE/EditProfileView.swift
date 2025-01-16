@@ -47,8 +47,13 @@ struct EditProfileView: View {
     }
 
     private func saveProfile() {
-        profileData.saveProfile()
-        showAlert = true
+        profileData.saveToFirestore { success in
+            if success {
+                showAlert = true
+            } else {
+                print("Failed to save profile.")
+            }
+        }
     }
 }
 
