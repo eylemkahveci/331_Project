@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct mainView: View {
     
-    let bestSellers = ["urun1", "urun2", "urun3", "urun4"]
-    let recommended = ["urunA", "urunB", "urunC", "urunD"]
+    @StateObject private var productData = ProductData()  // ProductData'yı burada kullanıyoruz
+    
     @State private var textForSearch: String = ""
     
     var body: some View {
@@ -31,8 +32,10 @@ struct mainView: View {
                         
                         ScrollView(.horizontal, showsIndicators: false) {
                             LazyHStack(spacing: 16) {
-                                ForEach(bestSellers, id: \.self) { product in
-                                    ProductView(productName: product)
+                                ForEach(productData.categorizedProducts.flatMap { $0.value }, id: \.id) { product in
+                                    if product.bestSeller {
+                                        ProductView(product: product)
+                                    }
                                 }
                             }
                             .padding(.horizontal)
@@ -45,8 +48,10 @@ struct mainView: View {
                         
                         ScrollView(.horizontal, showsIndicators: false) {
                             LazyHStack(spacing: 16) {
-                                ForEach(recommended, id: \.self) { product in
-                                    ProductView(productName: product)
+                                ForEach(productData.categorizedProducts.flatMap { $0.value }, id: \.id) { product in
+                                    if !product.bestSeller {
+                                        ProductView(product: product)
+                                    }
                                 }
                             }
                             .padding(.horizontal)
@@ -58,24 +63,13 @@ struct mainView: View {
             }
             .navigationTitle("Main")
             .background(Color.white.ignoresSafeArea())
+            .onAppear {
+                productData.fetchProducts()  // Verileri almak için fonksiyonu çağırıyoruz
+            }
         }
     }
 }
 
-struct ProductView: View {
-    let productName: String
-    
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 100, height: 150)
-            Text(productName)
-                .foregroundColor(.black)
-                .font(.caption)
-        }
-    }
-}
 
 #Preview {
     mainView()

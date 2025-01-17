@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		035B168C2D0B34ED00B65AEF /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 035B168B2D0B34ED00B65AEF /* GoogleService-Info.plist */; };
 		0384C3732D384C7600D34E48 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 0384C3722D384C7600D34E48 /* FirebaseAuth */; };
 		0384C3752D384C7600D34E48 /* FirebaseAuthCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 0384C3742D384C7600D34E48 /* FirebaseAuthCombine-Community */; };
 		0384C3772D384C7600D34E48 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 0384C3762D384C7600D34E48 /* FirebaseDatabase */; };
 		0384C3792D384C7600D34E48 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 0384C3782D384C7600D34E48 /* FirebaseFirestore */; };
 		0384C37B2D384C7600D34E48 /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = 0384C37A2D384C7600D34E48 /* FirebaseFunctions */; };
 		0384C37D2D384C7600D34E48 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 0384C37C2D384C7600D34E48 /* FirebaseStorage */; };
+		246424AE2D3A574B00890C99 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 246424AD2D3A574B00890C99 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,7 +37,7 @@
 		035B16582D0B2B3600B65AEF /* ACE.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ACE.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		035B16682D0B2B3700B65AEF /* ACETests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ACETests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		035B16722D0B2B3700B65AEF /* ACEUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ACEUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		035B168B2D0B34ED00B65AEF /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		246424AD2D3A574B00890C99 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -96,7 +96,7 @@
 				035B166B2D0B2B3700B65AEF /* ACETests */,
 				035B16752D0B2B3700B65AEF /* ACEUITests */,
 				035B16592D0B2B3600B65AEF /* Products */,
-				035B168B2D0B34ED00B65AEF /* GoogleService-Info.plist */,
+				246424AD2D3A574B00890C99 /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -239,7 +239,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				035B168C2D0B34ED00B65AEF /* GoogleService-Info.plist in Resources */,
+				246424AE2D3A574B00890C99 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -433,6 +433,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -463,6 +464,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

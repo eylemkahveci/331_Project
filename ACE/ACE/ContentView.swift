@@ -6,23 +6,30 @@
 //
 
 import SwiftUI
-
-
+import FirebaseFirestore
 
 struct ContentView: View {
     
     @EnvironmentObject var profileData: ProfileData
-    
+    @StateObject private var productData = ProductData()  // Ürün verisi
+
     var body: some View {
-        TabView{
+        TabView {
             mainView()
                 .tabItem { Image(systemName: "house") }
-            CategoryListView(categories: sampleCategories)
+            
+            // Kategoriler ekranını Firebase'den çekilen ürün verisi ile güncelledik
+            CategoryListView()
                 .tabItem { Image(systemName: "list.bullet") }
+            
             ShoppingCartView()
                 .tabItem{ Image(systemName: "cart") }
+            
             ProfileView()
                 .tabItem{ Image(systemName: "person")}
+        }
+        .onAppear {
+            productData.fetchProducts() // Ürünleri Firebase'den çekmeye başla
         }
     }
 }

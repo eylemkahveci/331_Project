@@ -14,6 +14,7 @@ struct AuthView: View {
     @State private var isLoginMode = true
     @State private var errorMessage = ""
     @State private var isLoggedIn = false
+    @EnvironmentObject var profileData: ProfileData
 
     var body: some View {
         if isLoggedIn {
@@ -25,26 +26,22 @@ struct AuthView: View {
                         .font(.largeTitle)
                         .bold()
 
-                    // E-posta Girişi
                     TextField("Email", text: $email)
                         .autocapitalization(.none)
                         .keyboardType(.emailAddress)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding(.horizontal)
 
-                    // Şifre Girişi
                     SecureField("Password", text: $password)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding(.horizontal)
 
-                    // Hata Mesajı
                     if !errorMessage.isEmpty {
                         Text(errorMessage)
                             .foregroundColor(.red)
                             .font(.caption)
                     }
 
-                    // Giriş veya Kayıt Butonu
                     Button(action: handleAuthAction) {
                         Text(isLoginMode ? "Login" : "Create Account")
                             .foregroundColor(.white)
@@ -55,7 +52,6 @@ struct AuthView: View {
                     }
                     .padding(.horizontal)
 
-                    // Giriş/Kayıt Modu Değiştirici
                     Button(action: {
                         isLoginMode.toggle()
                         errorMessage = ""
@@ -72,7 +68,6 @@ struct AuthView: View {
         }
     }
 
-    // Firebase Giriş/Kayıt İşlemi
     private func handleAuthAction() {
         if isLoginMode {
             loginUser()
@@ -83,28 +78,36 @@ struct AuthView: View {
 
     private func loginUser() {
         Auth.auth().signIn(withEmail: email, password: password) { result, error in
+            // `self` burada bir struct olduğundan doğrudan kullanabilirsiniz.
             if let error = error {
-                print("Login error: \(error.localizedDescription)") // Hata mesajını konsola yazdır
-                errorMessage = "Failed to login: \(error.localizedDescription)"
+                print("Login error: \(error.localizedDescription)")
+                self.errorMessage = "Failed to login: \(error.localizedDescription)"
                 return
             }
-            isLoggedIn = true
+
+            // Oturum açma başarılı
+            self.isLoggedIn = true
+
+            // Kullanıcı verilerini Firestore'dan çek
+            self.profileData.fetchProfile()
+
+            // Kullanıcı verilerini Firestore'da güncelle
         }
     }
-
+    
     private func createUser() {
         Auth.auth().createUser(withEmail: email, password: password) { result, error in
             if let error = error {
-                errorMessage = "Failed to create account: \(error.localizedDescription)"
+                self.errorMessage = "Failed to create account: \(error.localizedDescription)"
                 return
             }
-            isLoggedIn = true
+            self.isLoggedIn = true
         }
     }
 }
-
 
 #Preview {
     AuthView()
         .environmentObject(ProfileData())
 }
+

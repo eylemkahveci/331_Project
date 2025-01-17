@@ -4,8 +4,9 @@
 //
 //  Created by Emre Uğur on 23.12.2024.
 //
-
 import SwiftUI
+import FirebaseFirestore
+import FirebaseAuth
 
 struct ProfileView: View {
     @EnvironmentObject var profileData: ProfileData
@@ -63,10 +64,12 @@ struct ProfileView: View {
             .navigationDestination(isPresented: $isEditingProfile) {
                 EditProfileView()
             }
+            .onAppear {
+                profileData.fetchProfile() // Firestore'dan verileri çek
+            }
         }
     }
 }
-
 
 #Preview {
     ProfileView()
