@@ -11,14 +11,14 @@ import FirebaseFirestore
 struct CartItem: Identifiable {
     var id: String
     let name: String
-    let price: Int
+    let price: Double
     var quantity: Int
     let imageUrl: String
 }
 
 struct ShoppingCartView: View {
     @State private var cartItems: [CartItem] = []
-    @State private var total: Int = 0
+    @State private var total: Double = 0.0
     @State private var showAlert: Bool = false
     @State private var selectedItemForRemoval: CartItem?
     
@@ -84,7 +84,7 @@ struct ShoppingCartView: View {
                                         }
                                     }
                                     
-                                    Text("$\(item.price * item.quantity)")
+                                    Text("$\(item.price * Double(item.quantity), specifier: "%.2f")")
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
                                 }
@@ -105,7 +105,7 @@ struct ShoppingCartView: View {
                             
                             Spacer()
                             
-                            Text("$\(total)")
+                            Text("$\(total, specifier: "%.2f")")
                                 .font(.title2)
                                 .fontWeight(.bold)
                         }
@@ -127,7 +127,8 @@ struct ShoppingCartView: View {
             .navigationTitle("Shopping Cart")
             .onAppear {
                 loadCart()
-            }.alert(isPresented: $showAlert) {
+            }
+            .alert(isPresented: $showAlert) {
                 Alert(
                     title: Text("Remove Item"),
                     message: Text("Are you sure you want to remove \(selectedItemForRemoval?.name ?? "this item") from the cart?"),
@@ -164,19 +165,21 @@ struct ShoppingCartView: View {
                 var fetchedItems: [CartItem] = []
                 
                 for (productID, quantity) in items {
-                    db.collection("products").document(productID).getDocument { productDoc, error in
-                        if let productDoc = productDoc, productDoc.exists {
-                            if let productData = productDoc.data() {
-                                let name = productData["name"] as? String ?? "Unknown Product"
-                                let price = productData["price"] as? Int ?? 0
-                                let imageUrl = productData["imageUrl"] as? String ?? ""
-                                
-                                let cartItem = CartItem(id: productID, name: name, price: price, quantity: quantity, imageUrl: imageUrl)
-                                fetchedItems.append(cartItem)
-                                
-                                if fetchedItems.count == items.count {
-                                    self.cartItems = fetchedItems
-                                    calculateTotal()
+                    if quantity > 0 { // Eğer ürün miktarı 0'dan büyükse işlem yap
+                        db.collection("products").document(productID).getDocument { productDoc, error in
+                            if let productDoc = productDoc, productDoc.exists {
+                                if let productData = productDoc.data() {
+                                    let name = productData["name"] as? String ?? "Unknown Product"
+                                    let price = productData["price"] as? Double ?? 0.0
+                                    let imageUrl = productData["imageUrl"] as? String ?? ""
+                                    
+                                    let cartItem = CartItem(id: productID, name: name, price: price, quantity: quantity, imageUrl: imageUrl)
+                                    fetchedItems.append(cartItem)
+                                    
+                                    if fetchedItems.count == items.filter({ $0.value > 0 }).count {
+                                        self.cartItems = fetchedItems
+                                        calculateTotal()
+                                    }
                                 }
                             }
                         }
@@ -187,25 +190,42 @@ struct ShoppingCartView: View {
     }
     
     func calculateTotal() {
-        total = cartItems.reduce(0) { $0 + $1.price * $1.quantity }
+        total = cartItems.reduce(0.0) { $0 + $1.price * Double($1.quantity) }
     }
     
     func reduceQuantity(for item: Binding<CartItem>) {
         if item.wrappedValue.quantity > 1 {
-            // Miktar 1'den fazla ise azalt
+            // Miktar 1'den fazla ise miktarı azalt ve güncelle
             item.wrappedValue.quantity -= 1
             updateCart(item: item.wrappedValue)
         } else {
-            // Miktar 1 ise uyarı göster
+            // Miktar 1 ise uyarıyı göster ve Firestore'daki miktarı sıfırla
             selectedItemForRemoval = item.wrappedValue
             showAlert = true
         }
     }
 
-    // Ürünü sepetten kaldırma
     func removeItem(_ item: CartItem) {
-        cartItems.removeAll { $0.id == item.id }
-        updateCart(item: item) // Firestore'u güncelle
+        let db = Firestore.firestore()
+        let userID = "user_id"
+        let cartRef = db.collection("carts").document(userID)
+        
+        // Firestore'daki miktarı 0 yap
+        cartRef.updateData([
+            "items.\(item.id)": 0
+        ]) { error in
+            if let error = error {
+                print("Error updating quantity to 0 in Firestore: \(error.localizedDescription)")
+            } else {
+                print("Item quantity updated to 0 in Firestore")
+                
+                // Yerel `cartItems` dizisinden kaldır
+                DispatchQueue.main.async {
+                    self.cartItems.removeAll { $0.id == item.id }
+                    self.calculateTotal() // Toplamı yeniden hesapla
+                }
+            }
+        }
     }
     
     func increaseQuantity(for item: Binding<CartItem>) {

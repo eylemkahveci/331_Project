@@ -23,6 +23,7 @@ class ProductData: ObservableObject {
 
     private var db = Firestore.firestore()
 
+    
     // Firestore'dan ürünleri çek ve kategorilere ayır
     func fetchProducts() {
         db.collection("products").getDocuments { snapshot, error in
@@ -35,6 +36,7 @@ class ProductData: ObservableObject {
                 print("No documents found.")
                 return
             }
+            
 
             // Firestore'dan gelen belgeleri işleyip kategorilere ayır
             DispatchQueue.main.async {

@@ -86,6 +86,17 @@ struct ProductListView: View {
                             }
                         }
                         Spacer()
+                        
+                        Button(action: {
+                            addToCart(product: product)
+                        }) {
+                            Text("Add to Cart")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Color.blue)
+                                .cornerRadius(6)
+                        }
                     }
                     .padding(.vertical, 4)
                 }
@@ -93,5 +104,43 @@ struct ProductListView: View {
         }
         .navigationTitle(category)
     }
+    
+    
+    private func addToCart(product: Product) {
+        let db = Firestore.firestore()
+        let userID = "user_id" // Burada gerçek kullanıcı kimliği kullanılmalı
+        
+        let cartRef = db.collection("carts").document(userID)
+        
+        cartRef.getDocument { (document, error) in
+            if let document = document, document.exists {
+                // Eğer sepet zaten varsa, items alanına ürün ekleyelim
+                if var items = document.data()?["items"] as? [String: Int] {
+                    items[product.id, default: 0] += 1
+                    cartRef.updateData([
+                        "items": items
+                    ]) { error in
+                        if let error = error {
+                            print("Error updating cart: \(error)")
+                        } else {
+                            print("Product added to cart successfully!")
+                        }
+                    }
+                }
+            } else {
+                // Sepet yoksa yeni bir sepet oluştur
+                cartRef.setData([
+                    "items": [
+                        product.id: 1
+                    ]
+                ]) { error in
+                    if let error = error {
+                        print("Error creating cart: \(error)")
+                    } else {
+                        print("New cart created and product added!")
+                    }
+                }
+            }
+        }
+    }
 }
-
