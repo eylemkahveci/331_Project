@@ -52,6 +52,15 @@ struct AuthView: View {
                     }
                     .padding(.horizontal)
 
+                    if isLoginMode {
+                        Button(action: resetPassword) {
+                            Text("Forgot your password?")
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                        }
+                        .padding(.top, 8)
+                    }
+
                     Button(action: {
                         isLoginMode.toggle()
                         errorMessage = ""
@@ -78,20 +87,14 @@ struct AuthView: View {
 
     private func loginUser() {
         Auth.auth().signIn(withEmail: email, password: password) { result, error in
-            // `self` burada bir struct olduğundan doğrudan kullanabilirsiniz.
             if let error = error {
                 print("Login error: \(error.localizedDescription)")
                 self.errorMessage = "Failed to login: \(error.localizedDescription)"
                 return
             }
 
-            // Oturum açma başarılı
             self.isLoggedIn = true
-
-            // Kullanıcı verilerini Firestore'dan çek
             self.profileData.fetchProfile()
-
-            // Kullanıcı verilerini Firestore'da güncelle
         }
     }
     
@@ -102,6 +105,23 @@ struct AuthView: View {
                 return
             }
             self.isLoggedIn = true
+        }
+    }
+    
+    private func resetPassword() {
+        guard !email.isEmpty else {
+            self.errorMessage = "Please enter your email address to reset your password."
+            return
+        }
+
+        Auth.auth().sendPasswordReset(withEmail: email) { error in
+            if let error = error {
+                print("Reset password error: \(error.localizedDescription)")
+                self.errorMessage = "Failed to send password reset email: \(error.localizedDescription)"
+                return
+            }
+
+            self.errorMessage = "A password reset email has been sent to \(email)."
         }
     }
 }
