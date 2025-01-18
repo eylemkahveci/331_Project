@@ -10,7 +10,9 @@ import FirebaseAuth
 
 struct ProfileView: View {
     @EnvironmentObject var profileData: ProfileData
+    @Environment(\.presentationMode) var presentationMode
     @State private var isEditingProfile: Bool = false
+    @State private var showLogoutConfirmation: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -61,12 +63,46 @@ struct ProfileView: View {
             }
             .padding()
             .navigationTitle("Profile")
+            .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(isPresented: $isEditingProfile) {
                 EditProfileView()
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showLogoutConfirmation = true
+                    }) {
+                        Image(systemName: "rectangle.portrait.and.arrow.right")
+                            .foregroundColor(.red)
+                    }
+                }
             }
             .onAppear {
                 profileData.fetchProfile() // Firestore'dan verileri çek
             }
+            .alert("Are you sure you want to log out?", isPresented: $showLogoutConfirmation) {
+                Button("Log Out", role: .destructive) {
+                    logOut()
+                }
+                Button("Cancel", role: .cancel) {}
+            }
+        }
+    }
+
+    // MARK: - Logout Function
+    private func logOut() {
+        do {
+            try Auth.auth().signOut()
+            
+            // Kullanıcı çıkış yapınca AuthView'a dön
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                if let window = windowScene.windows.first {
+                    window.rootViewController = UIHostingController(rootView: AuthView().environmentObject(ProfileData()))
+                    window.makeKeyAndVisible()
+                }
+            }
+        } catch {
+            print("Error logging out: \(error.localizedDescription)")
         }
     }
 }
