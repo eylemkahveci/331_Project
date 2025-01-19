@@ -8,36 +8,39 @@
 import SwiftUI
 import FirebaseFirestore
 
+// MARK: - mainView
+/// Main view displaying categorized products, a search bar, and a filter for products.
 struct mainView: View {
-    @StateObject private var productData = ProductData()  // Ürün verileri
-    @State private var textForSearch: String = ""  // Arama kutusu için metin
-    @State private var filteredProducts: [Product] = []  // Filtrelenmiş ürünler
+    @StateObject private var productData = ProductData() // Holds product data fetched from Firestore
+    @State private var textForSearch: String = "" // Text input for the search bar
+    @State private var filteredProducts: [Product] = [] // Filtered products based on search query
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Arama Kutusu
+                // Search Bar
                 HStack {
                     TextField("Search for item", text: $textForSearch)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .textFieldStyle(RoundedBorderTextFieldStyle()) // Styled as a rounded text field
                         .padding(.horizontal)
                         .padding(5)
-                        .onChange(of: textForSearch) {
+                        .onChange(of: textForSearch) { // Updates filtered products when search text changes
                             filterProducts()
                         }
                 }
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        // Eğer arama kutusu boşsa tüm ürünler gösterilir
+                        // If search bar is empty, show categorized products
                         if textForSearch.isEmpty {
-                            // Best Sellers
+                            // Best Sellers Section
                             Text("Best Sellers")
                                 .font(.headline)
                                 .padding(.horizontal)
                             
                             ScrollView(.horizontal, showsIndicators: false) {
                                 LazyHStack(spacing: 16) {
+                                    // Display products marked as best sellers
                                     ForEach(productData.categorizedProducts.flatMap { $0.value }, id: \.id) { product in
                                         if product.bestSeller {
                                             ProductView(product: product)
@@ -48,13 +51,14 @@ struct mainView: View {
                             }
                             .frame(height: 150)
                             
-                            // Recommended
+                            // Recommended Products Section
                             Text("Recommended")
                                 .font(.headline)
                                 .padding(.horizontal)
                             
                             ScrollView(.horizontal, showsIndicators: false) {
                                 LazyHStack(spacing: 16) {
+                                    // Display products that are not marked as best sellers
                                     ForEach(productData.categorizedProducts.flatMap { $0.value }, id: \.id) { product in
                                         if !product.bestSeller {
                                             ProductView(product: product)
@@ -65,7 +69,7 @@ struct mainView: View {
                             }
                             .frame(height: 150)
                         } else {
-                            // Arama sonuçları
+                            // Display search results
                             Text("Search Results")
                                 .font(.headline)
                                 .padding(.horizontal)
@@ -81,20 +85,22 @@ struct mainView: View {
                     .padding(.top, 8)
                 }
             }
-            .navigationTitle("Main")
-            .background(Color.white.ignoresSafeArea())
+            .navigationTitle("Main") // Title for the navigation bar
+            .background(Color.white.ignoresSafeArea()) // Background color
             .onAppear {
-                productData.fetchProducts()  // Ürünleri getir
+                productData.fetchProducts() // Fetch product data from Firestore on view load
             }
         }
     }
 
-    // MARK: - Ürünleri Filtreleme Fonksiyonu
+    // MARK: - Filter Products
+    /// Filters products based on the search text.
     private func filterProducts() {
-        let allProducts = productData.categorizedProducts.flatMap { $0.value }
+        let allProducts = productData.categorizedProducts.flatMap { $0.value } // Get all products
         if textForSearch.isEmpty {
-            filteredProducts = []
+            filteredProducts = [] // If search is empty, show no filtered products
         } else {
+            // Filter products by name, ignoring case sensitivity
             filteredProducts = allProducts.filter { product in
                 product.name.localizedCaseInsensitiveContains(textForSearch)
             }
@@ -102,8 +108,7 @@ struct mainView: View {
     }
 }
 
-
-// Preview
+// MARK: - Preview
 #Preview {
     mainView()
 }

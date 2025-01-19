@@ -8,24 +8,29 @@
 import SwiftUI
 import FirebaseFirestore
 
+// MARK: - Model for CartItem
+/// Represents an item in the shopping cart.
 struct CartItem: Identifiable {
-    var id: String
-    let name: String
-    let price: Double
-    var quantity: Int
-    let imageUrl: String
+    var id: String // Unique identifier
+    let name: String // Product name
+    let price: Double // Product price
+    var quantity: Int // Quantity of the product in the cart
+    let imageUrl: String // URL for the product image
 }
 
+// MARK: - ShoppingCartView
+/// Displays the shopping cart and allows users to manage their items.
 struct ShoppingCartView: View {
-    @State private var cartItems: [CartItem] = []
-    @State private var total: Double = 0.0
-    @State private var showAlert: Bool = false
-    @State private var selectedItemForRemoval: CartItem?
-    
+    @State private var cartItems: [CartItem] = [] // Items in the cart
+    @State private var total: Double = 0.0 // Total price of the cart
+    @State private var showAlert: Bool = false // Tracks if the remove item alert is shown
+    @State private var selectedItemForRemoval: CartItem? // Tracks the item to be removed
+
     var body: some View {
         NavigationView {
             VStack {
                 if cartItems.isEmpty {
+                    // MARK: - Empty Cart View
                     VStack {
                         Image(systemName: "cart")
                             .font(.system(size: 80))
@@ -36,32 +41,42 @@ struct ShoppingCartView: View {
                             .padding()
                     }
                 } else {
+                    // MARK: - Cart Items Grid
                     ScrollView {
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
                             ForEach($cartItems) { $item in
+                                // Individual product card
                                 VStack(spacing: 8) {
+                                    // AsyncImage for product image
                                     AsyncImage(url: URL(string: item.imageUrl)) { phase in
-                                        if let image = phase.image {
+                                        switch phase {
+                                        case .empty:
+                                            Color.gray.opacity(0.3)
+                                                .frame(height: 120)
+                                                .cornerRadius(10)
+                                        case .success(let image):
                                             image
                                                 .resizable()
                                                 .scaledToFit()
                                                 .frame(height: 120)
                                                 .cornerRadius(10)
-                                        } else if phase.error != nil {
+                                        case .failure:
                                             Color.red
                                                 .frame(height: 120)
                                                 .cornerRadius(10)
-                                        } else {
+                                        @unknown default:
                                             Color.gray.opacity(0.3)
                                                 .frame(height: 120)
                                                 .cornerRadius(10)
                                         }
                                     }
-                                    
+
+                                    // Product name
                                     Text(item.name)
                                         .font(.headline)
                                         .multilineTextAlignment(.center)
-                                    
+
+                                    // Quantity controls
                                     HStack {
                                         Button(action: {
                                             reduceQuantity(for: $item)
@@ -70,11 +85,11 @@ struct ShoppingCartView: View {
                                                 .foregroundColor(.red)
                                                 .font(.title2)
                                         }
-                                        
+
                                         Text("\(item.quantity)")
                                             .font(.title3)
                                             .frame(width: 40)
-                                        
+
                                         Button(action: {
                                             increaseQuantity(for: $item)
                                         }) {
@@ -83,7 +98,8 @@ struct ShoppingCartView: View {
                                                 .font(.title2)
                                         }
                                     }
-                                    
+
+                                    // Product price
                                     Text("$\(item.price * Double(item.quantity), specifier: "%.2f")")
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
@@ -96,21 +112,23 @@ struct ShoppingCartView: View {
                         }
                         .padding()
                     }
-                    
+
+                    // MARK: - Total and Checkout
                     VStack {
                         HStack {
                             Text("Total:")
                                 .font(.title2)
                                 .fontWeight(.bold)
-                            
+
                             Spacer()
-                            
+
                             Text("$\(total, specifier: "%.2f")")
                                 .font(.title2)
                                 .fontWeight(.bold)
                         }
                         .padding(.horizontal)
-                        
+
+                        // Checkout Button
                         Button(action: checkoutTapped) {
                             Text("Checkout Now")
                                 .font(.headline)
@@ -126,7 +144,7 @@ struct ShoppingCartView: View {
             }
             .navigationTitle("Shopping Cart")
             .onAppear {
-                loadCart()
+                loadCart() // Load cart items when the view appears
             }
             .alert(isPresented: $showAlert) {
                 Alert(
@@ -142,45 +160,42 @@ struct ShoppingCartView: View {
             }
         }
     }
-    
-    // MARK: - Functions
-    
+
+    // MARK: - Load Cart Items
+    /// Fetches cart items from Firestore and updates the local state.
     func loadCart() {
         let db = Firestore.firestore()
         let userID = "user_id"
         let cartRef = db.collection("carts").document(userID)
-        
+
         cartRef.getDocument { document, error in
             if let error = error {
                 print("Error fetching cart: \(error.localizedDescription)")
                 return
             }
-            
+
             guard let document = document, document.exists else {
                 print("No cart data found.")
                 return
             }
-            
+
             if let items = document.data()?["items"] as? [String: Int] {
                 var fetchedItems: [CartItem] = []
-                
-                for (productID, quantity) in items {
-                    if quantity > 0 { // Eğer ürün miktarı 0'dan büyükse işlem yap
-                        db.collection("products").document(productID).getDocument { productDoc, error in
-                            if let productDoc = productDoc, productDoc.exists {
-                                if let productData = productDoc.data() {
-                                    let name = productData["name"] as? String ?? "Unknown Product"
-                                    let price = productData["price"] as? Double ?? 0.0
-                                    let imageUrl = productData["imageUrl"] as? String ?? ""
-                                    
-                                    let cartItem = CartItem(id: productID, name: name, price: price, quantity: quantity, imageUrl: imageUrl)
-                                    fetchedItems.append(cartItem)
-                                    
-                                    if fetchedItems.count == items.filter({ $0.value > 0 }).count {
-                                        self.cartItems = fetchedItems
-                                        calculateTotal()
-                                    }
-                                }
+
+                for (productID, quantity) in items where quantity > 0 {
+                    db.collection("products").document(productID).getDocument { productDoc, error in
+                        if let productDoc = productDoc, productDoc.exists,
+                           let productData = productDoc.data() {
+                            let name = productData["name"] as? String ?? "Unknown Product"
+                            let price = productData["price"] as? Double ?? 0.0
+                            let imageUrl = productData["imageUrl"] as? String ?? ""
+
+                            let cartItem = CartItem(id: productID, name: name, price: price, quantity: quantity, imageUrl: imageUrl)
+                            fetchedItems.append(cartItem)
+
+                            if fetchedItems.count == items.filter({ $0.value > 0 }).count {
+                                self.cartItems = fetchedItems
+                                calculateTotal()
                             }
                         }
                     }
@@ -188,58 +203,62 @@ struct ShoppingCartView: View {
             }
         }
     }
-    
+
+    // MARK: - Calculate Total
+    /// Calculates the total price of items in the cart.
     func calculateTotal() {
         total = cartItems.reduce(0.0) { $0 + $1.price * Double($1.quantity) }
     }
-    
+
+    // MARK: - Reduce Quantity
+    /// Decreases the quantity of an item in the cart.
     func reduceQuantity(for item: Binding<CartItem>) {
         if item.wrappedValue.quantity > 1 {
-            // Miktar 1'den fazla ise miktarı azalt ve güncelle
             item.wrappedValue.quantity -= 1
             updateCart(item: item.wrappedValue)
         } else {
-            // Miktar 1 ise uyarıyı göster ve Firestore'daki miktarı sıfırla
             selectedItemForRemoval = item.wrappedValue
             showAlert = true
         }
     }
 
+    // MARK: - Remove Item
+    /// Removes an item from the cart and updates Firestore.
     func removeItem(_ item: CartItem) {
         let db = Firestore.firestore()
         let userID = "user_id"
         let cartRef = db.collection("carts").document(userID)
-        
-        // Firestore'daki miktarı 0 yap
+
         cartRef.updateData([
             "items.\(item.id)": 0
         ]) { error in
             if let error = error {
-                print("Error updating quantity to 0 in Firestore: \(error.localizedDescription)")
+                print("Error removing item from Firestore: \(error.localizedDescription)")
             } else {
-                print("Item quantity updated to 0 in Firestore")
-                
-                // Yerel `cartItems` dizisinden kaldır
                 DispatchQueue.main.async {
                     self.cartItems.removeAll { $0.id == item.id }
-                    self.calculateTotal() // Toplamı yeniden hesapla
+                    self.calculateTotal()
                 }
             }
         }
     }
-    
+
+    // MARK: - Increase Quantity
+    /// Increases the quantity of an item in the cart.
     func increaseQuantity(for item: Binding<CartItem>) {
         if item.wrappedValue.quantity < 10 {
             item.wrappedValue.quantity += 1
             updateCart(item: item.wrappedValue)
         }
     }
-    
+
+    // MARK: - Update Cart
+    /// Updates the cart in Firestore.
     func updateCart(item: CartItem) {
         let db = Firestore.firestore()
         let userID = "user_id"
         let cartRef = db.collection("carts").document(userID)
-        
+
         cartRef.updateData([
             "items.\(item.id)": item.quantity
         ]) { error in
@@ -254,13 +273,15 @@ struct ShoppingCartView: View {
             }
         }
     }
-    
+
+    // MARK: - Checkout
+    /// Handles the checkout action.
     func checkoutTapped() {
         print("Checkout Confirmed with total: \(total)$")
     }
 }
 
-// Preview
+// MARK: - Preview
 struct ShoppingCartView_Previews: PreviewProvider {
     static var previews: some View {
         ShoppingCartView()
